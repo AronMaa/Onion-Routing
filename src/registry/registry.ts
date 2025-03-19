@@ -25,6 +25,8 @@ export async function launchRegistry() {
 
   _registry.post("/registerNode", (req: Request<{}, {}, RegisterNodeBody>, res: Response) => {
     const { nodeId, pubKey } = req.body;
+    // Remove existing entry if present
+  nodes = nodes.filter(n => n.nodeId !== nodeId);
     nodes.push({ nodeId, pubKey });
     res.status(200).send("Node registered");
   });

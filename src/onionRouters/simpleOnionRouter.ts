@@ -51,18 +51,26 @@ export async function simpleOnionRouter(nodeId: number) {
     }
   });
 
-  const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId, async () => {
-    console.log(`Onion router ${nodeId} listening on port ${BASE_ONION_ROUTER_PORT + nodeId}`);
+  const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId);
 
-    // Register node
+  // Wait for server to start
+  await new Promise<void>((resolve) => {
+    server.on('listening', () => {
+      console.log(`Onion router ${nodeId} listening on port ${BASE_ONION_ROUTER_PORT + nodeId}`);
+      resolve();
+    });
+  });
+
+  // Register node
+  try {
     await fetch(`http://localhost:${REGISTRY_PORT}/registerNode`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nodeId, pubKey }),
-    }).catch(err => {
-      console.error(`Node ${nodeId} registration error:`, err);
     });
-  });
+  } catch (err) {
+    console.error(`Node ${nodeId} registration error:`, err);
+  }
 
   return server;
 }
